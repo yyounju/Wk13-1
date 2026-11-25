@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phonics Lab 4 — Sound Pattern Explorer</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --surface: #ffffff;
+    --surface-soft: #eef3fa;
+    --ink: #1e293b;
+    --ink-muted: #52637a;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --accent: #f59e0b;
+    --accent-light: #fef3c7;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --error: #dc2626;
+    --error-light: #fee2e2;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --border: #dbe4f0;
+    --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --radius: 16px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: #fff;
+    padding: 20px 24px;
+    box-shadow: 0 4px 16px rgba(30, 58, 138, 0.2);
+  }
+
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand p {
+    font-size: 0.9rem;
+    color: #bfdbfe;
+    margin-top: 2px;
+  }
+
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.25);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+  }
+
+  .voice-controls button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+
+  .voice-controls button.active {
+    background: #fff;
+    color: #1e3a8a;
+    border-color: #fff;
+  }
+
+  main {
+    max-width: 960px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+  }
+
+  /* Vowel Selector Tabs */
+  .vowel-selector {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .vowel-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  }
+
+  .vowel-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+  }
+
+  .vowel-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+  }
+
+  .vowel-letter {
+    font-size: 1.6rem;
+    font-weight: 800;
+    display: block;
+    line-height: 1.1;
+  }
+
+  .vowel-sub {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  /* Activity Mode Navigation */
+  .mode-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .mode-btn {
+    flex: 1;
+    min-width: 170px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+  }
+
+  .mode-btn:hover {
+    background: var(--surface-soft);
+  }
+
+  .mode-btn.active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+
+  /* Cards & Layout */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
+  .section-title p {
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+    margin-top: 2px;
+  }
+
+  /* Pattern Detective Banner */
+  .rule-box {
+    background: var(--surface-soft);
+    border-left: 5px solid var(--primary);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .rule-col h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge-short {
+    background: var(--accent-light);
+    color: #92400e;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .badge-long {
+    background: var(--purple-light);
+    color: #5b21b6;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .rule-col p {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+
+  .pattern-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .chip {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Word Grid in Pattern Lab */
+  .word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .word-card {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+    transition: all 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .word-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
+  }
+
+  .word-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .word-display {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+
+  .syllable-break {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .highlight-short {
+    background: var(--accent-light);
+    color: #92400e;
+    padding: 0 4px;
+    border-radius: 5px;
+    border-bottom: 2px solid #f59e0b;
+  }
+
+  .highlight-long {
+    background: var(--purple-light);
+    color: #5b21b6;
+    padding: 0 4px;
+    border-radius: 5px;
+    border-bottom: 2px solid #7c3aed;
+  }
+
+  .clue-text {
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    background: var(--surface-soft);
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .word-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-dark);
+  }
+
+  .btn-soft {
+    background: var(--surface-soft);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+
+  .btn-soft:hover {
+    background: #e2e8f0;
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: #fff;
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-large {
+    padding: 14px 24px;
+    font-size: 1.05rem;
+    border-radius: 12px;
+  }
+
+  /* Listening Sort Activity */
+  .listen-stage {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .mystery-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    border: 2px dashed #93c5fd;
+    border-radius: 18px;
+    padding: 28px 20px;
+    margin-bottom: 22px;
+  }
+
+  .mystery-word {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 12px 0 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .listen-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .choice-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    text-align: center;
+  }
+
+  .choice-card:hover:not(:disabled) {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
+  }
+
+  .choice-card:disabled {
+    cursor: default;
+  }
+
+  .choice-card.correct {
+    background: var(--success-light);
+    border-color: var(--success);
+    color: #14532d;
+  }
+
+  .choice-card.wrong {
+    background: var(--error-light);
+    border-color: var(--error);
+    color: #7f1d1d;
+  }
+
+  .choice-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .choice-desc {
+    font-size: 0.86rem;
+    color: var(--ink-muted);
+  }
+
+  /* Speak & Check Studio */
+  .speak-box {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .target-word-banner {
+    background: var(--surface-soft);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .target-word-big {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin: 6px 0;
+  }
+
+  .mic-btn {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .mic-btn:hover {
+    transform: scale(1.05);
+    background: var(--primary-dark);
+  }
+
+  .mic-btn.listening {
+    background: var(--error);
+    animation: pulse 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+    70% { box-shadow: 0 0 0 18px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  }
+
+  .feedback-banner {
+    margin-top: 18px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.96rem;
+    text-align: left;
+  }
+
+  .feedback-banner.success {
+    background: var(--success-light);
+    color: #14532d;
+    border: 1px solid #86efac;
+  }
+
+  .feedback-banner.error {
+    background: var(--error-light);
+    color: #7f1d1d;
+    border: 1px solid #fca5a5;
+  }
+
+  .feedback-banner.info {
+    background: var(--primary-light);
+    color: #1e3a8a;
+    border: 1px solid #93c5fd;
+  }
+
+  /* Pattern Builder / Cloze Challenge */
+  .builder-sentence {
+    font-size: 1.25rem;
+    font-weight: 600;
+    background: var(--surface-soft);
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  .blank-slot {
+    display: inline-block;
+    min-width: 130px;
+    border-bottom: 3px solid var(--primary);
+    color: var(--primary);
+    font-weight: 800;
+    text-align: center;
+    padding: 0 8px;
+  }
+
+  .option-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .word-option-btn {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 22px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .word-option-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .word-option-btn.correct {
+    background: var(--success-light);
+    border-color: var(--success);
+    color: #14532d;
+  }
+
+  .word-option-btn.wrong {
+    background: var(--error-light);
+    border-color: var(--error);
+    color: #7f1d1d;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    font-weight: 700;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ink-muted);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 640px) {
+    .vowel-selector {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .vowel-letter {
+      font-size: 1.3rem;
+    }
+    .vowel-sub {
+      font-size: 0.68rem;
+    }
+    .choice-grid {
+      grid-template-columns: 1fr;
+    }
+    .card {
+      padding: 18px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>🔬 Phonics Lab 4</h1>
+      <p>Decode multi-syllable words using Short & Long Vowel Patterns</p>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-pill">⭐ Stars: <span id="scoreDisplay">0</span></div>
+      <div class="stat-pill">🔥 Streak: <span id="streakDisplay">0</span></div>
+      <div class="voice-controls" title="Adjust speaking speed">
+        <span>Speed:</span>
+        <button id="speedNormal" class="active" onclick="setSpeechRate(0.95)">1.0x</button>
+        <button id="speedSlow" onclick="setSpeechRate(0.68)">0.7x</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Vowel Family Selector -->
+  <div class="vowel-selector" id="vowelSelector">
+    <button class="vowel-btn active" data-vowel="A" onclick="selectVowel('A')">
+      <span class="vowel-letter">A</span>
+      <span class="vowel-sub">/æ/ vs /eɪ/</span>
+    </button>
+    <button class="vowel-btn" data-vowel="E" onclick="selectVowel('E')">
+      <span class="vowel-letter">E</span>
+      <span class="vowel-sub">/ɛ/ vs /iː/</span>
+    </button>
+    <button class="vowel-btn" data-vowel="I" onclick="selectVowel('I')">
+      <span class="vowel-letter">I</span>
+      <span class="vowel-sub">/ɪ/ vs /aɪ/</span>
+    </button>
+    <button class="vowel-btn" data-vowel="O" onclick="selectVowel('O')">
+      <span class="vowel-letter">O</span>
+      <span class="vowel-sub">/ɑ/ vs /oʊ/</span>
+    </button>
+    <button class="vowel-btn" data-vowel="U" onclick="selectVowel('U')">
+      <span class="vowel-letter">U</span>
+      <span class="vowel-sub">/ʌ/ vs /juː/</span>
+    </button>
+  </div>
+
+  <!-- Activity Modes -->
+  <div class="mode-nav">
+    <button class="mode-btn active" data-mode="explore" onclick="selectMode('explore')">
+      🔍 1. Pattern Detective
+    </button>
+    <button class="mode-btn" data-mode="listen" onclick="selectMode('listen')">
+      🎧 2. Sound Sorter (Listen)
+    </button>
+    <button class="mode-btn" data-mode="speak" onclick="selectMode('speak')">
+      🎙️ 3. Pronunciation Studio
+    </button>
+    <button class="mode-btn" data-mode="context" onclick="selectMode('context')">
+      🧩 4. Tricky Word Challenge
+    </button>
+  </div>
+
+  <!-- Dynamic Activity Container -->
+  <div class="card" id="appContainer"></div>
+</main>
+
+<script>
+/**
+ * Phonics Data Bank tailored for 4th Graders:
+ * Focuses on recognizing letter-sound patterns inside multi-syllable and everyday academic/story words
+ * (e.g., why "vanilla" has a short 'i' because of the double 'll', vs "dinosaur" or "silent").
+ */
+const PHONICS_DATA = {
+  A: {
+    letter: "A",
+    shortLabel: "Short A (/æ/ as in 'apple')",
+    longLabel: "Long A (/eɪ/ as in 'acorn')",
+    shortRule: "Closed syllables (vowel trapped by consonants, often followed by double letters like -pp- or -ll-) keep 'a' short.",
+    longRule: "Open syllables (ending in 'a'), Magic-E (a_e), or vowel teams (ai, ay) make 'a' say its name.",
+    shortPatterns: ["Closed syllable (a + consonant)", "Double consonant trap (-ll-, -pp-)"],
+    longPatterns: ["Open syllable (a-)", "Magic-E (a_e)", "Vowel teams (ai, ay)"],
+    words: [
+      {
+        word: "fantastic",
+        syllables: "fan • tas • tic",
+        type: "short",
+        pattern: "Closed syllable (-tas-)",
+        highlight: "tas",
+        clue: "The 'a' in 'tas' is closed in by the 's', so it makes a crisp short /æ/ sound.",
+        sentence: "Our science experiment had a ________ result!"
+      },
+      {
+        word: "alphabet",
+        syllables: "al • pha • bet",
+        type: "short",
+        pattern: "Closed syllable (al-)",
+        highlight: "al",
+        clue: "Starts with a closed syllable 'al-', giving it the short /æ/ sound.",
+        sentence: "There are twenty-six letters in the English ________."
+      },
+      {
+        word: "galaxy",
+        syllables: "gal • ax • y",
+        type: "short",
+        pattern: "Closed syllable (gal-)",
+        highlight: "gal",
+        clue: "Even though it is a big space word, 'gal-' is closed by 'l' -> short /æ/.",
+        sentence: "Earth is located inside the Milky Way ________."
+      },
+      {
+        word: "tornado",
+        syllables: "tor • na • do",
+        type: "long",
+        pattern: "Open syllable (-na-)",
+        highlight: "na",
+        clue: "The middle syllable 'na' ends right on the vowel 'a', so it says its name /eɪ/!",
+        sentence: "The spinning ________ touched down in the empty field."
+      },
+      {
+        word: "container",
+        syllables: "con • tain • er",
+        type: "long",
+        pattern: "Vowel team (ai)",
+        highlight: "tain",
+        clue: "The vowel team 'ai' works together to make the long /eɪ/ sound.",
+        sentence: "Please put your leftover lunch inside a plastic ________."
+      },
+      {
+        word: "celebrate",
+        syllables: "cel • e • brate",
+        type: "long",
+        pattern: "Magic-E (a_e)",
+        highlight: "brate",
+        clue: "The silent 'e' at the end jumps over 't' to make the 'a' say /eɪ/.",
+        sentence: "We will ________ her birthday with chocolate cake."
+      },
+      {
+        word: "volcano",
+        syllables: "vol • ca • no",
+        type: "long",
+        pattern: "Open syllable (-ca-)",
+        highlight: "ca",
+        clue: "Notice 'ca' is an open syllable—nothing blocks the 'a', so it is long /eɪ/.",
+        sentence: "Hot lava flowed down the side of the ________."
+      },
+      {
+        word: "calendar",
+        syllables: "cal • en • dar",
+        type: "short",
+        pattern: "Closed syllable (cal-)",
+        highlight: "cal",
+        clue: "The 'l' closes the first syllable 'cal-', making the 'a' short /æ/.",
+        sentence: "Check the classroom ________ to see when the field trip starts."
+      }
+    ]
+  },
+
+  E: {
+    letter: "E",
+    shortLabel: "Short E (/ɛ/ as in 'echo')",
+    longLabel: "Long E (/iː/ as in 'eagle')",
+    shortRule: "Closed syllables (e followed by consonants like -l-, -n-, -d-) keep 'e' short /ɛ/.",
+    longRule: "Open syllables (e-), vowel teams (ee, ea), or end-of-word 'e' make 'e' say /iː/.",
+    shortPatterns: ["Closed syllable (e + consonant)", "Double consonant (-ll-, -ss-)"],
+    longPatterns: ["Open syllable (e-)", "Vowel teams (ee, ea)"],
+    words: [
+      {
+        word: "excellent",
+        syllables: "ex • cel • lent",
+        type: "short",
+        pattern: "Double consonant (-ll-)",
+        highlight: "cel",
+        clue: "The double 'll' closes the middle syllable, keeping the 'e' short /ɛ/.",
+        sentence: "You did an ________ job explaining the math problem."
+      },
+      {
+        word: "skeleton",
+        syllables: "skel • e • ton",
+        type: "short",
+        pattern: "Closed syllable (skel-)",
+        highlight: "skel",
+        clue: "The 'l' closes 'skel-', so the first 'e' makes the short /ɛ/ sound.",
+        sentence: "The museum displayed the giant ________ of a dinosaur."
+      },
+      {
+        word: "umbrella",
+        syllables: "um • brel • la",
+        type: "short",
+        pattern: "Double consonant (-ll-)",
+        highlight: "brel",
+        clue: "Just like 'vanilla', the double 'll' locks in a short vowel sound (/ɛ/)!",
+        sentence: "Don't forget your ________ because rain is in the forecast."
+      },
+      {
+        word: "emerald",
+        syllables: "em • er • ald",
+        type: "short",
+        pattern: "Closed syllable (em-)",
+        highlight: "em",
+        clue: "Starts with a closed syllable 'em-', giving it the short /ɛ/ sound.",
+        sentence: "The queen's crown had a bright green ________ in the center."
+      },
+      {
+        word: "secret",
+        syllables: "se • cret",
+        type: "long",
+        pattern: "Open syllable (se-)",
+        highlight: "se",
+        clue: "The first syllable 'se-' ends with the vowel 'e', so it says its name /iː/.",
+        sentence: "They built a ________ clubhouse behind the oak tree."
+      },
+      {
+        word: "athlete",
+        syllables: "ath • lete",
+        type: "long",
+        pattern: "Magic-E (e_e)",
+        highlight: "lete",
+        clue: "The silent 'e' at the end makes the first 'e' in 'lete' long /iː/.",
+        sentence: "Every Olympic ________ trains for hours each day."
+      },
+      {
+        word: "eager",
+        syllables: "ea • ger",
+        type: "long",
+        pattern: "Vowel team (ea)",
+        highlight: "ea",
+        clue: "The vowel team 'ea' creates the long /iː/ sound at the start.",
+        sentence: "The fourth graders were ________ to start the robotics club."
+      },
+      {
+        word: "electricity",
+        syllables: "e • lec • tric • i • ty",
+        type: "long",
+        pattern: "Open syllable (e-)",
+        highlight: "e",
+        clue: "The very first syllable is just 'e-' all by itself—open and long /iː/!",
+        sentence: "Lightning is a powerful natural form of ________."
+      }
+    ]
+  },
+
+  I: {
+    letter: "I",
+    shortLabel: "Short I (/ɪ/ as in 'igloo')",
+    longLabel: "Long I (/aɪ/ as in 'island')",
+    shortRule: "Double consonants (like -ll- in 'vanilla'!) close the syllable and force a short /ɪ/ sound.",
+    longRule: "Open syllables (i-), Magic-E (i_e), or 'igh' make 'i' say its name /aɪ/.",
+    shortPatterns: ["Double consonant trap (-ll-, -ss-)", "Closed syllable (i + consonant)"],
+    longPatterns: ["Open syllable (si-, ti-)", "Magic-E (i_e)", "Trigraph (igh)"],
+    words: [
+      {
+        word: "vanilla",
+        syllables: "va • nil • la",
+        type: "short",
+        pattern: "Double consonant (-ll-)",
+        highlight: "nil",
+        clue: "Look at the double 'll'! It closes the syllable 'nil', making 'i' short /ɪ/ (not /aɪ/).",
+        sentence: "My favorite ice cream flavor is ________ with chocolate chips."
+      },
+      {
+        word: "gorilla",
+        syllables: "go • ril • la",
+        type: "short",
+        pattern: "Double consonant (-ll-)",
+        highlight: "ril",
+        clue: "Same pattern as 'vanilla'! Double 'll' keeps the 'i' short /ɪ/ in 'ril'.",
+        sentence: "A silverback ________ is the largest living primate."
+      },
+      {
+        word: "invisible",
+        syllables: "in • vis • i • ble",
+        type: "short",
+        pattern: "Closed syllable (-vis-)",
+        highlight: "vis",
+        clue: "Both 'in-' and '-vis-' are closed syllables, so both 'i's are short /ɪ/.",
+        sentence: "In the story, the magic cloak made the hero ________."
+      },
+      {
+        word: "difficult",
+        syllables: "dif • fi • cult",
+        type: "short",
+        pattern: "Double consonant (-ff-)",
+        highlight: "dif",
+        clue: "The double 'ff' closes 'dif-', locking in the short /ɪ/ sound.",
+        sentence: "The final level of the puzzle was very ________ to solve."
+      },
+      {
+        word: "silent",
+        syllables: "si • lent",
+        type: "long",
+        pattern: "Open syllable (si-)",
+        highlight: "si",
+        clue: "Only ONE 'l' after 'i'! That leaves 'si-' open, so 'i' says its name /aɪ/.",
+        sentence: "The library is a ________ zone for reading and studying."
+      },
+      {
+        word: "dinosaur",
+        syllables: "di • no • saur",
+        type: "long",
+        pattern: "Open syllable (di-)",
+        highlight: "di",
+        clue: "The first syllable 'di-' ends right on the vowel 'i', making it long /aɪ/.",
+        sentence: "Triceratops was a plant-eating ________ with three horns."
+      },
+      {
+        word: "lightning",
+        syllables: "light • ning",
+        type: "long",
+        pattern: "Pattern (-igh-)",
+        highlight: "light",
+        clue: "The silent 'gh' signals that the 'i' is long /aɪ/.",
+        sentence: "A bright flash of ________ lit up the dark storm clouds."
+      },
+      {
+        word: "horizon",
+        syllables: "ho • ri • zon",
+        type: "long",
+        pattern: "Open syllable (-ri-)",
+        highlight: "ri",
+        clue: "The middle syllable '-ri-' has no consonant closing it, so 'i' is long /aɪ/.",
+        sentence: "We watched the sun sink slowly below the ________."
+      }
+    ]
+  },
+
+  O: {
+    letter: "O",
+    shortLabel: "Short O (/ɑ/ as in 'octopus')",
+    longLabel: "Long O (/oʊ/ as in 'ocean')",
+    shortRule: "Closed syllables (o followed by consonants like -c-, -p-, -ck-) keep 'o' short /ɑ/.",
+    longRule: "Open syllables (o-), Magic-E (o_e), or vowel teams (oa, ow) make 'o' say /oʊ/.",
+    shortPatterns: ["Closed syllable (o + consonant)", "Double consonant (-cc-, -pp-)"],
+    longPatterns: ["Open syllable (ro-, mo-)", "Magic-E (o_e)", "Vowel team (oa)"],
+    words: [
+      {
+        word: "broccoli",
+        syllables: "broc • co • li",
+        type: "short",
+        pattern: "Double consonant (-cc-)",
+        highlight: "broc",
+        clue: "The double 'cc' closes the first syllable 'broc-', keeping the 'o' short /ɑ/.",
+        sentence: "Steamed ________ looks like tiny green trees on your plate."
+      },
+      {
+        word: "octopus",
+        syllables: "oc • to • pus",
+        type: "short",
+        pattern: "Closed syllable (oc-)",
+        highlight: "oc",
+        clue: "Starts with 'oc-' closed by 'c', giving it the short /ɑ/ sound.",
+        sentence: "An ________ has eight arms and three hearts."
+      },
+      {
+        word: "confident",
+        syllables: "con • fi • dent",
+        type: "short",
+        pattern: "Closed syllable (con-)",
+        highlight: "con",
+        clue: "The 'n' closes 'con-', making the 'o' short /ɑ/.",
+        sentence: "After practicing her speech, Maya felt ________ on stage."
+      },
+      {
+        word: "opposite",
+        syllables: "op • po • site",
+        type: "short",
+        pattern: "Double consonant (-pp-)",
+        highlight: "op",
+        clue: "The double 'pp' traps the first 'o', making it short /ɑ/.",
+        sentence: "North is the ________ direction of south."
+      },
+      {
+        word: "robot",
+        syllables: "ro • bot",
+        type: "long",
+        pattern: "Open syllable (ro-)",
+        highlight: "ro",
+        clue: "Only one 'b' in the middle! So 'ro-' stays open and says long /oʊ/.",
+        sentence: "Our team programmed a ________ to pick up colored blocks."
+      },
+      {
+        word: "microscope",
+        syllables: "mi • cro • scope",
+        type: "long",
+        pattern: "Magic-E (o_e)",
+        highlight: "scope",
+        clue: "Silent 'e' at the end makes the 'o' in '-scope' say its name /oʊ/.",
+        sentence: "We used a ________ in science class to see tiny plant cells."
+      },
+      {
+        word: "approach",
+        syllables: "ap • proach",
+        type: "long",
+        pattern: "Vowel team (oa)",
+        highlight: "proach",
+        clue: "The vowel team 'oa' makes a smooth long /oʊ/ sound.",
+        sentence: "Please slow down as you ________ the crosswalk."
+      },
+      {
+        word: "moment",
+        syllables: "mo • ment",
+        type: "long",
+        pattern: "Open syllable (mo-)",
+        highlight: "mo",
+        clue: "'mo-' ends right on the vowel 'o', making it long /oʊ/.",
+        sentence: "Wait just a ________ while I tie my shoelaces."
+      }
+    ]
+  },
+
+  U: {
+    letter: "U",
+    shortLabel: "Short U (/ʌ/ as in 'umbrella')",
+    longLabel: "Long U (/juː/ or /uː/ as in 'uniform')",
+    shortRule: "Closed syllables (u followed by consonants or double letters like -tt-, -bb-) keep 'u' short /ʌ/.",
+    longRule: "Open syllables (u-, mu-, stu-) or Magic-E (u_e) give 'u' its long /juː/ or /uː/ sound.",
+    shortPatterns: ["Closed syllable (u + consonant)", "Double consonant (-tt-, -zz-)"],
+    longPatterns: ["Open syllable (u-, mu-, hu-)", "Magic-E (u_e)"],
+    words: [
+      {
+        word: "butterfly",
+        syllables: "but • ter • fly",
+        type: "short",
+        pattern: "Double consonant (-tt-)",
+        highlight: "but",
+        clue: "Double 'tt' closes the first syllable 'but-', making 'u' short /ʌ/.",
+        sentence: "A monarch ________ migrated thousands of miles south."
+      },
+      {
+        word: "subtraction",
+        syllables: "sub • trac • tion",
+        type: "short",
+        pattern: "Closed syllable (sub-)",
+        highlight: "sub",
+        clue: "'sub-' is closed by 'b', giving 'u' the short /ʌ/ sound.",
+        sentence: "Check your ________ answer by using addition."
+      },
+      {
+        word: "puzzle",
+        syllables: "puz • zle",
+        type: "short",
+        pattern: "Double consonant (-zz-)",
+        highlight: "puz",
+        clue: "Double 'zz' locks in the short /ʌ/ sound in 'puz-'.",
+        sentence: "We finally found the missing corner piece of the ________."
+      },
+      {
+        word: "thunder",
+        syllables: "thun • der",
+        type: "short",
+        pattern: "Closed syllable (thun-)",
+        highlight: "thun",
+        clue: "The 'n' closes 'thun-', keeping 'u' short /ʌ/.",
+        sentence: "Loud ________ rumbled right after the lightning flash."
+      },
+      {
+        word: "uniform",
+        syllables: "u • ni • form",
+        type: "long",
+        pattern: "Open syllable (u-)",
+        highlight: "u",
+        clue: "The first syllable is 'u-' all by itself—open and saying its name /juː/!",
+        sentence: "Every soccer player wore a clean blue and white ________."
+      },
+      {
+        word: "musical",
+        syllables: "mu • si • cal",
+        type: "long",
+        pattern: "Open syllable (mu-)",
+        highlight: "mu",
+        clue: "Only one 's' follows 'u', leaving 'mu-' open for the long /juː/ sound.",
+        sentence: "The trumpet is a brass ________ instrument."
+      },
+      {
+        word: "costume",
+        syllables: "cos • tume",
+        type: "long",
+        pattern: "Magic-E (u_e)",
+        highlight: "tume",
+        clue: "Silent 'e' at the end makes the 'u' in '-tume' long /uː/.",
+        sentence: "She wore an astronaut ________ for the school play."
+      },
+      {
+        word: "universe",
+        syllables: "u • ni • verse",
+        type: "long",
+        pattern: "Open syllable (u-)",
+        highlight: "u",
+        clue: "Starts with the open syllable 'u-', just like 'unicorn' and 'united'.",
+        sentence: "Scientists study stars and planets across the ________."
+      }
+    ]
+  }
+};
+
+// App State
+const state = {
+  vowel: "A",
+  mode: "explore",
+  score: 0,
+  streak: 0,
+  speechRate: 0.95,
+  showSyllables: true,
+  // Mode 2: Listen Sort
+  listenIndex: 0,
+  listenOrder: [],
+  listenAnswered: false,
+  listenChoice: null,
+  listenWordRevealed: false,
+  // Mode 3: Speak Studio
+  speakIndex: 0,
+  isRecording: false,
+  speakFeedback: null,
+  // Mode 4: Context Challenge
+  contextIndex: 0,
+  contextOrder: [],
+  contextAnswered: false,
+  contextSelectedWord: null
+};
+
+// Speech Synthesis Helper
+function speakText(text, customRate = null) {
+  if (!("speechSynthesis" in window)) {
+    alert("Sorry, your browser does not support text-to-speech audio.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = customRate || state.speechRate;
+  utter.pitch = 1.02;
+
+  // Prefer a natural US English voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang === "en-US" && (v.name.includes("Samantha") || v.name.includes("Google US English") || v.name.includes("Natural")))
+    || voices.find(v => v.lang.startsWith("en-US"))
+    || voices.find(v => v.lang.startsWith("en"));
+  if (preferred) utter.voice = preferred;
+
+  window.speechSynthesis.speak(utter);
+}
+
+// Speak syllable by syllable slowly
+function speakSyllables(syllableStr) {
+  const parts = syllableStr.split("•").map(s => s.trim());
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+
+  parts.forEach((part, idx) => {
+    const utter = new SpeechSynthesisUtterance(part);
+    utter.lang = "en-US";
+    utter.rate = 0.72;
+    utter.pitch = idx % 2 === 0 ? 1.05 : 0.98;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
+function setSpeechRate(rate) {
+  state.speechRate = rate;
+  document.getElementById("speedNormal").classList.toggle("active", rate === 0.95);
+  document.getElementById("speedSlow").classList.toggle("active", rate === 0.68);
+}
+
+function updateStats(points = 0, correct = true) {
+  if (correct) {
+    state.score += points;
+    state.streak += 1;
+  } else {
+    state.streak = 0;
+  }
+  document.getElementById("scoreDisplay").textContent = state.score;
+  document.getElementById("streakDisplay").textContent = state.streak;
+}
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function resetActivityIndices() {
+  const words = PHONICS_DATA[state.vowel].words;
+  state.listenIndex = 0;
+  state.listenOrder = shuffleArray(words);
+  state.listenAnswered = false;
+  state.listenChoice = null;
+  state.listenWordRevealed = false;
+
+  state.speakIndex = 0;
+  state.speakFeedback = null;
+
+  state.contextIndex = 0;
+  state.contextOrder = shuffleArray(words);
+  state.contextAnswered = false;
+  state.contextSelectedWord = null;
+}
+
+function selectVowel(vowel) {
+  state.vowel = vowel;
+  document.querySelectorAll(".vowel-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.vowel === vowel);
+  });
+  resetActivityIndices();
+  render();
+}
+
+function selectMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+  resetActivityIndices();
+  render();
+}
+
+function toggleSyllables() {
+  state.showSyllables = !state.showSyllables;
+  render();
+}
+
+// Highlight target phonics chunk inside a word
+function formatHighlightedWord(wordObj) {
+  const { word, highlight, type } = wordObj;
+  const cls = type === "short" ? "highlight-short" : "highlight-long";
+  const idx = word.toLowerCase().indexOf(highlight.toLowerCase());
+  if (idx === -1) return word;
+  const before = word.slice(0, idx);
+  const match = word.slice(idx, idx + highlight.length);
+  const after = word.slice(idx + highlight.length);
+  return `${before}<span class="${cls}">${match}</span>${after}`;
+}
+
+/* =========================================================
+   MODE 1: PATTERN DETECTIVE (EXPLORE)
+========================================================= */
+function renderExplore() {
+  const data = PHONICS_DATA[state.vowel];
+  const container = document.getElementById("appContainer");
+
+  const cardsHtml = data.words.map((w, i) => `
+    <div class="word-card">
+      <div>
+        <div class="word-top">
+          <div class="word-display">${formatHighlightedWord(w)}</div>
+          <span class="${w.type === 'short' ? 'badge-short' : 'badge-long'}">
+            ${w.type === 'short' ? 'Short ' + data.letter : 'Long ' + data.letter}
+          </span>
+        </div>
+        ${state.showSyllables ? `<div class="syllable-break">Syllables: <strong>${w.syllables}</strong> • <em>${w.pattern}</em></div>` : ''}
+        <div class="clue-text">💡 ${w.clue}</div>
+      </div>
+      <div class="word-actions">
+        <button class="btn btn-primary" style="flex:1" onclick="speakText('${w.word}')">
+          🔊 Word
+        </button>
+        <button class="btn btn-soft" style="flex:1" onclick="speakSyllables('${w.syllables}')">
+          🐢 Syllables
+        </button>
+      </div>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Pattern Detective: Letter ${data.letter}</h2>
+        <p>Spot the letter pattern around <strong>${data.letter}</strong> to predict its sound before you even hear it!</p>
+      </div>
+      <label class="toggle-row">
+        <input type="checkbox" ${state.showSyllables ? "checked" : ""} onchange="toggleSyllables()" />
+        Show Syllable Breaks
+      </label>
+    </div>
+
+    <div class="rule-box">
+      <div class="rule-col">
+        <h3><span class="badge-short">SHORT ${data.letter}</span> ${data.shortLabel}</h3>
+        <p>${data.shortRule}</p>
+        <div class="pattern-chips">
+          ${data.shortPatterns.map(p => `<span class="chip">${p}</span>`).join("")}
+        </div>
+      </div>
+      <div class="rule-col">
+        <h3><span class="badge-long">LONG ${data.letter}</span> ${data.longLabel}</h3>
+        <p>${data.longRule}</p>
+        <div class="pattern-chips">
+          ${data.longPatterns.map(p => `<span class="chip">${p}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="word-grid">${cardsHtml}</div>
+  `;
+}
+
+/* =========================================================
+   MODE 2: SOUND SORTER (LISTENING DISCRIMINATION)
+========================================================= */
+function renderListen() {
+  const data = PHONICS_DATA[state.vowel];
+  const container = document.getElementById("appContainer");
+  const total = state.listenOrder.length;
+  const current = state.listenOrder[state.listenIndex];
+  const pct = Math.round(((state.listenIndex) / total) * 100);
+
+  container.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Sound Sorter: Train Your Ears (${data.letter})</h2>
+        <p>Listen carefully to the highlighted vowel sound. Is it <strong>Short ${data.letter}</strong> or <strong>Long ${data.letter}</strong>?</p>
+      </div>
+    </div>
+
+    <div class="progress-row">
+      <span>Word ${state.listenIndex + 1} of ${total}</span>
+      <span>Letter ${data.letter} Listening Challenge</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width: ${pct}%"></div>
+    </div>
+
+    <div class="listen-stage">
+      <div class="mystery-box">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+          Step 1: Listen to the word
+        </div>
+
+        <div class="mystery-word">
+          ${state.listenWordRevealed || state.listenAnswered ? formatHighlightedWord(current) : "🎧 Mystery Word #" + (state.listenIndex + 1)}
+        </div>
+
+        ${state.listenWordRevealed || state.listenAnswered
+          ? `<div class="syllable-break">${current.syllables}</div>`
+          : `<div style="font-size: 0.9rem; color: var(--ink-muted); margin-bottom: 8px;">Try listening first without looking at the spelling!</div>`
+        }
+
+        <div class="listen-buttons">
+          <button class="btn btn-primary btn-large" onclick="speakText('${current.word}')">
+            🔊 Play Word
+          </button>
+          <button class="btn btn-soft" onclick="speakText('${current.word}', 0.62)">
+            🐢 Slow Motion
+          </button>
+          ${!state.listenWordRevealed && !state.listenAnswered ? `
+            <button class="btn btn-soft" onclick="revealListenWord()">
+              👁️ Peek at Spelling
+            </button>
+          ` : ""}
+        </div>
+      </div>
+
+      <div style="font-size: 0.92rem; font-weight: 700; color: var(--ink);">
+        Step 2: Which ${data.letter} sound did you hear?
+      </div>
+
+      <div class="choice-grid">
+        <button class="choice-card ${getListenChoiceClass('short')}"
+          ${state.listenAnswered ? "disabled" : ""}
+          onclick="submitListenChoice('short')">
+          <span class="choice-title">Short ${data.letter}</span>
+          <span class="choice-desc">${data.shortLabel}</span>
+        </button>
+
+        <button class="choice-card ${getListenChoiceClass('long')}"
+          ${state.listenAnswered ? "disabled" : ""}
+          onclick="submitListenChoice('long')">
+          <span class="choice-title">Long ${data.letter}</span>
+          <span class="choice-desc">${data.longLabel}</span>
+        </button>
+      </div>
+
+      ${state.listenAnswered ? `
+        <div class="feedback-banner ${state.listenChoice === current.type ? 'success' : 'error'}">
+          <div>
+            <strong>${state.listenChoice === current.type ? '🎉 Spot on!' : '🧐 Good try!'}</strong>
+            The word is <strong>${current.word}</strong> (${current.syllables}), which uses <strong>${current.type === 'short' ? 'Short ' + data.letter : 'Long ' + data.letter}</strong>.
+          </div>
+          <div style="margin-top: 6px; font-weight: 500;">${current.clue}</div>
+          <div style="margin-top: 14px; text-align: right;">
+            <button class="btn btn-primary" onclick="nextListenWord()">
+              ${state.listenIndex + 1 < total ? "Next Word ➡️" : "Restart Round 🔄"}
+            </button>
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function getListenChoiceClass(type) {
+  if (!state.listenAnswered) return "";
+  const current = state.listenOrder[state.listenIndex];
+  if (type === current.type) return "correct";
+  if (type === state.listenChoice && type !== current.type) return "wrong";
+  return "";
+}
+
+function revealListenWord() {
+  state.listenWordRevealed = true;
+  renderListen();
+}
+
+function submitListenChoice(choice) {
+  if (state.listenAnswered) return;
+  const current = state.listenOrder[state.listenIndex];
+  state.listenAnswered = true;
+  state.listenChoice = choice;
+  state.listenWordRevealed = true;
+
+  if (choice === current.type) {
+    updateStats(10, true);
+  } else {
+    updateStats(0, false);
+  }
+  renderListen();
+}
+
+function nextListenWord() {
+  if (state.listenIndex + 1 < state.listenOrder.length) {
+    state.listenIndex += 1;
+  } else {
+    state.listenIndex = 0;
+    state.listenOrder = shuffleArray(PHONICS_DATA[state.vowel].words);
+  }
+  state.listenAnswered = false;
+  state.listenChoice = null;
+  state.listenWordRevealed = false;
+  renderListen();
+  speakText(state.listenOrder[state.listenIndex].word);
+}
+
+/* =========================================================
+   MODE 3: PRONUNCIATION STUDIO (SPEECH RECOGNITION)
+========================================================= */
+function renderSpeak() {
+  const data = PHONICS_DATA[state.vowel];
+  const words = data.words;
+  const current = words[state.speakIndex];
+  const container = document.getElementById("appContainer");
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  container.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Pronunciation Studio: Speak & Check (${data.letter})</h2>
+        <p>Check the phonics clue first, listen to the model if needed, then say the word clearly into your microphone.</p>
+      </div>
+      <div style="font-weight: 700; color: var(--ink-muted);">
+        Word ${state.speakIndex + 1} / ${words.length}
+      </div>
+    </div>
+
+    <div class="speak-box">
+      <div class="target-word-banner">
+        <span class="${current.type === 'short' ? 'badge-short' : 'badge-long'}">
+          ${current.type === 'short' ? 'Short ' + data.letter : 'Long ' + data.letter} • ${current.pattern}
+        </span>
+        <div class="target-word-big">${formatHighlightedWord(current)}</div>
+        <div class="syllable-break" style="font-size: 1.05rem;">${current.syllables}</div>
+        <p style="font-size: 0.92rem; color: var(--ink-muted); max-width: 480px; margin: 8px auto 16px;">
+          💡 ${current.clue}
+        </p>
+
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-soft" onclick="speakText('${current.word}')">
+            🔊 Hear Model
+          </button>
+          <button class="btn btn-soft" onclick="speakSyllables('${current.syllables}')">
+            🐢 Hear Syllables
+          </button>
+        </div>
+      </div>
+
+      ${SpeechRecognition ? `
+        <div>
+          <button class="mic-btn ${state.isRecording ? 'listening' : ''}" onclick="startSpeechCheck()" title="Click and speak">
+            🎙️
+          </button>
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--ink);">
+            ${state.isRecording ? "Listening... Say \"" + current.word + "\" now!" : "Tap the microphone and say \"" + current.word + "\""}
+          </div>
+        </div>
+      ` : `
+        <div class="feedback-banner info">
+          <strong>Browser Note:</strong> Live microphone recognition works best in Chrome, Edge, or Safari.
+          You can still practice by listening to the model above, saying the word aloud, and clicking "I Said It!" below.
+          <div style="margin-top: 12px;">
+            <button class="btn btn-success" onclick="manualSpeakPass()">✅ I Practiced Saying "${current.word}"</button>
+          </div>
+        </div>
+      `}
+
+      ${state.speakFeedback ? `
+        <div class="feedback-banner ${state.speakFeedback.status}">
+          ${state.speakFeedback.message}
+        </div>
+      ` : ""}
+
+      <div style="display: flex; justify-content: space-between; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+        <button class="btn btn-soft" onclick="changeSpeakWord(-1)">⬅️ Previous Word</button>
+        <button class="btn btn-primary" onclick="changeSpeakWord(1)">Next Word ➡️</button>
+      </div>
+    </div>
+  `;
+}
+
+function startSpeechCheck() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition || state.isRecording) return;
+
+  const current = PHONICS_DATA[state.vowel].words[state.speakIndex];
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 3;
+
+  state.isRecording = true;
+  state.speakFeedback = null;
+  renderSpeak();
+
+  recognition.onresult = (event) => {
+    state.isRecording = false;
+    const transcripts = [];
+    for (let i = 0; i < event.results[0].length; i++) {
+      transcripts.push(event.results[0][i].transcript.toLowerCase().trim().replace(/[.,!?]/g, ""));
+    }
+    const target = current.word.toLowerCase();
+    const matched = transcripts.some(t => t === target || t.includes(target));
+
+    if (matched) {
+      updateStats(15, true);
+      state.speakFeedback = {
+        status: "success",
+        message: `🌟 Awesome pronunciation! We heard "<strong>${transcripts[0]}</strong>" — crystal clear ${current.type === 'short' ? 'Short' : 'Long'} ${state.vowel} sound!`
+      };
+    } else {
+      updateStats(0, false);
+      state.speakFeedback = {
+        status: "error",
+        message: `🎤 We heard "<strong>${transcripts[0] || '...'}</strong>". Tip: Break it into syllables (<strong>${current.syllables}</strong>) and remember the ${current.pattern} rule. Tap "Hear Model" and try again!`
+      };
+    }
+    renderSpeak();
+  };
+
+  recognition.onerror = (event) => {
+    state.isRecording = false;
+    state.speakFeedback = {
+      status: "info",
+      message: `Mic notice (${event.error}): Make sure microphone permission is allowed and speak clearly close to your mic.`
+    };
+    renderSpeak();
+  };
+
+  recognition.onend = () => {
+    if (state.isRecording) {
+      state.isRecording = false;
+      renderSpeak();
+    }
+  };
+
+  recognition.start();
+}
+
+function manualSpeakPass() {
+  updateStats(10, true);
+  state.speakFeedback = {
+    status: "success",
+    message: "🌟 Great job practicing aloud! Move on to the next word whenever you're ready."
+  };
+  renderSpeak();
+}
+
+function changeSpeakWord(delta) {
+  const len = PHONICS_DATA[state.vowel].words.length;
+  state.speakIndex = (state.speakIndex + delta + len) % len;
+  state.speakFeedback = null;
+  state.isRecording = false;
+  renderSpeak();
+}
+
+/* =========================================================
+   MODE 4: TRICKY WORD CHALLENGE (PATTERN + CONTEXT)
+========================================================= */
+function renderContext() {
+  const data = PHONICS_DATA[state.vowel];
+  const total = state.contextOrder.length;
+  const current = state.contextOrder[state.contextIndex];
+  const container = document.getElementById("appContainer");
+
+  // Build 4 word choices from the same vowel family (mix of short & long)
+  const others = data.words.filter(w => w.word !== current.word);
+  const distractors = shuffleArray(others).slice(0, 3);
+  const options = shuffleArray([current, ...distractors]);
+
+  // Cache options on current render cycle so clicking doesn't reshuffle
+  if (!current._cachedOptions || current._cachedForIndex !== state.contextIndex) {
+    current._cachedOptions = options;
+    current._cachedForIndex = state.contextIndex;
+  }
+
+  const sentenceDisplay = current.sentence.replace(
+    "________",
+    `<span class="blank-slot">${state.contextAnswered ? current.word : "?"}</span>`
+  );
+
+  container.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Tricky Word Challenge: Pattern & Meaning (${data.letter})</h2>
+        <p>Use the <strong>sound clue</strong> and the <strong>sentence</strong> to pick the right word!</p>
+      </div>
+      <div style="font-weight: 700; color: var(--ink-muted);">
+        Question ${state.contextIndex + 1} / ${total}
+      </div>
+    </div>
+
+    <div style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+      <span class="${current.type === 'short' ? 'badge-short' : 'badge-long'}">
+        Target Sound: ${current.type === 'short' ? 'Short ' + data.letter : 'Long ' + data.letter}
+      </span>
+      <span class="chip">Pattern Clue: ${current.pattern}</span>
+      <button class="btn btn-soft" onclick="speakText('${current.sentence.replace('________', current.word)}')">
+        🔊 Read Sentence Aloud
+      </button>
+    </div>
+
+    <div class="builder-sentence">
+      "${sentenceDisplay}"
+    </div>
+
+    <div style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.9rem;">
+      Choose the word that fits BOTH the sentence and the <strong>${current.type === 'short' ? 'Short' : 'Long'} ${data.letter}</strong> pattern:
+    </div>
+
+    <div class="option-pills">
+      ${current._cachedOptions.map(opt => {
+        let cls = "word-option-btn";
+        if (state.contextAnswered) {
+          if (opt.word === current.word) cls += " correct";
+          else if (opt.word === state.contextSelectedWord) cls += " wrong";
+        }
+        return `
+          <button class="${cls}" ${state.contextAnswered ? "disabled" : ""} onclick="submitContextChoice('${opt.word}')">
+            ${opt.word}
+          </button>
+        `;
+      }).join("")}
+    </div>
+
+    ${state.contextAnswered ? `
+      <div class="feedback-banner ${state.contextSelectedWord === current.word ? 'success' : 'error'}">
+        <div>
+          <strong>${state.contextSelectedWord === current.word ? '🏆 Nailed it!' : '💡 Let’s look closer!'}</strong>
+          <strong>${current.word}</strong> (${current.syllables}) has a <strong>${current.type === 'short' ? 'Short' : 'Long'} ${data.letter}</strong> sound.
+        </div>
+        <div style="margin-top: 6px; font-weight: 500;">${current.clue}</div>
+        <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn btn-soft" onclick="speakText('${current.word}')">🔊 Listen to "${current.word}"</button>
+          <button class="btn btn-primary" onclick="nextContextQuestion()">
+            ${state.contextIndex + 1 < total ? "Next Challenge ➡️" : "New Round 🔄"}
+          </button>
+        </div>
+      </div>
+    ` : ""}
+  `;
+}
+
+function submitContextChoice(word) {
+  if (state.contextAnswered) return;
+  const current = state.contextOrder[state.contextIndex];
+  state.contextAnswered = true;
+  state.contextSelectedWord = word;
+
+  if (word === current.word) {
+    updateStats(15, true);
+    speakText(current.word);
+  } else {
+    updateStats(0, false);
+  }
+  renderContext();
+}
+
+function nextContextQuestion() {
+  const current = state.contextOrder[state.contextIndex];
+  delete current._cachedOptions;
+  if (state.contextIndex + 1 < state.contextOrder.length) {
+    state.contextIndex += 1;
+  } else {
+    state.contextIndex = 0;
+    state.contextOrder = shuffleArray(PHONICS_DATA[state.vowel].words);
+  }
+  state.contextAnswered = false;
+  state.contextSelectedWord = null;
+  renderContext();
+}
+
+// Main Render Router
+function render() {
+  if (state.mode === "explore") renderExplore();
+  else if (state.mode === "listen") renderListen();
+  else if (state.mode === "speak") renderSpeak();
+  else if (state.mode === "context") renderContext();
+}
+
+// Ensure voices load cleanly in browsers
+if ("speechSynthesis" in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
+
+// Initialize App
+resetActivityIndices();
+render();
+</script>
+</body>
+</html>
